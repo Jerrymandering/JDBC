@@ -7,7 +7,7 @@ public class Util {
 
     // реализуйте настройку соеденения с БД
 
-    private static String URL = "jdbc:mysql://localhost:3306/user";
+    private static final String URL = "jdbc:mysql://localhost:3306/user";
     private static final String USERNAME = "root";
     private static final String Password = "root";
 
