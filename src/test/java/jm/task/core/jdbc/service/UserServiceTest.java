@@ -1,3 +1,5 @@
+package jm.task.core.jdbc.service;
+
 import jm.task.core.jdbc.model.User;
 import jm.task.core.jdbc.service.UserService;
 import jm.task.core.jdbc.service.UserServiceImpl;
@@ -12,7 +14,6 @@ public class UserServiceTest {
     private final String testName = "Ivan";
     private final String testLastName = "Ivanov";
     private final byte testAge = 5;
-
 
     @Test
     public void dropUsersTable() {
@@ -41,7 +42,12 @@ public class UserServiceTest {
             userService.createUsersTable();
             userService.saveUser(testName, testLastName, testAge);
 
-            User user = userService.getAllUsers().get(0);
+            List<User> users = userService.getAllUsers();
+            if (users == null || users.isEmpty()) {
+                Assert.fail("Список пользователей пуст после сохранения");
+            }
+
+            User user = users.get(0);
 
             if (!testName.equals(user.getName())
                     || !testLastName.equals(user.getLastName())
@@ -61,7 +67,19 @@ public class UserServiceTest {
             userService.dropUsersTable();
             userService.createUsersTable();
             userService.saveUser(testName, testLastName, testAge);
-            userService.removeUserById(1L);
+
+            List<User> usersBefore = userService.getAllUsers();
+            if (usersBefore == null || usersBefore.isEmpty()) {
+                Assert.fail("Нечего удалять — список пользователей пуст");
+            }
+
+            long idToRemove = usersBefore.get(0).getId();
+            userService.removeUserById(idToRemove);
+
+            List<User> usersAfter = userService.getAllUsers();
+            if (usersAfter != null && usersAfter.stream().anyMatch(u -> u.getId() == idToRemove)) {
+                Assert.fail("Пользователь не был удалён по id");
+            }
         } catch (Exception e) {
             Assert.fail("При тестировании удаления пользователя по id произошло исключение\n" + e);
         }
@@ -73,9 +91,10 @@ public class UserServiceTest {
             userService.dropUsersTable();
             userService.createUsersTable();
             userService.saveUser(testName, testLastName, testAge);
+
             List<User> userList = userService.getAllUsers();
 
-            if (userList.size() != 1) {
+            if (userList == null || userList.size() != 1) {
                 Assert.fail("Проверьте корректность работы метода сохранения пользователя/удаления или создания таблицы");
             }
         } catch (Exception e) {
@@ -91,12 +110,12 @@ public class UserServiceTest {
             userService.saveUser(testName, testLastName, testAge);
             userService.cleanUsersTable();
 
-            if (userService.getAllUsers().size() != 0) {
+            List<User> users = userService.getAllUsers();
+            if (users != null && users.size() != 0) {
                 Assert.fail("Метод очищения таблицы пользователей реализован не корректно");
             }
         } catch (Exception e) {
             Assert.fail("При тестировании очистки таблицы пользователей произошло исключение\n" + e);
         }
     }
-
 }
